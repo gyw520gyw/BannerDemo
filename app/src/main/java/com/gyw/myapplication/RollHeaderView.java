@@ -6,7 +6,6 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -86,23 +85,27 @@ public class RollHeaderView extends FrameLayout implements OnPageChangeListener 
      * @param urlList
      */
     public void setImgUrlData(List<String> urlList) {
-
         this.mUrlList = urlList;
         if (mUrlList != null && !mUrlList.isEmpty()) {
+            //清空数据
             dotList.clear();
             mDotLl.removeAllViews();
             ImageView dotIv;
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             for (int i = 0; i < mUrlList.size(); i++) {
                 dotIv = new ImageView(mContext);
-                if (i == 0) dotIv.setBackgroundResource(R.mipmap.banner_dot_select);
-                else {
+                if (i == 0) {
+                    dotIv.setBackgroundResource(R.mipmap.banner_dot_select);
+                } else {
                     dotIv.setBackgroundResource(R.mipmap.banner_dot_normal);
                 }
+                //设置点的间距
                 params.setMargins(0, 0, DisplayUtil.dip2px(mContext, 5), 0);
                 dotIv.setLayoutParams(params);
 
+                //添加点到view上
                 mDotLl.addView(dotIv);
+                //添加到集合中, 以便控制其切换
                 dotList.add(dotIv);
             }
         }
@@ -138,6 +141,7 @@ public class RollHeaderView extends FrameLayout implements OnPageChangeListener 
 
     private class AutoRollRunnable implements Runnable {
 
+        //是否在轮播的标志
         boolean isRunning = false;
 
         public void start() {
@@ -170,6 +174,7 @@ public class RollHeaderView extends FrameLayout implements OnPageChangeListener 
 
     private class MyAdapter extends PagerAdapter {
 
+        //为了复用
         private List<ImageView> imgCache = new ArrayList<ImageView>();
 
         @Override
@@ -185,21 +190,16 @@ public class RollHeaderView extends FrameLayout implements OnPageChangeListener 
 
         @Override
         public Object instantiateItem(ViewGroup container, final int position) {
+
             ImageView iv;
 
+            //获取ImageView对象
             if (imgCache.size() > 0) {
                 iv = imgCache.remove(0);
             } else {
                 iv = new ImageView(mContext);
             }
             iv.setScaleType(ScaleType.FIT_XY);
-
-            iv.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    headerViewClickListener.HeaderViewClick(position % mUrlList.size());
-                }
-            });
 
             iv.setOnTouchListener(new OnTouchListener() {
                 private int downX = 0;
@@ -218,7 +218,8 @@ public class RollHeaderView extends FrameLayout implements OnPageChangeListener 
                             mAutoRollRunnable.start();
                             int moveX = (int) v.getX();
                             long moveTime = System.currentTimeMillis();
-                            if (downX == moveX && (moveTime - downTime < 500)) {
+                            if (downX == moveX && (moveTime - downTime < 500)) {//点击的条件
+                                //轮播图回调点击事件
                                 headerViewClickListener.HeaderViewClick(position % mUrlList.size());
                             }
                             break;
@@ -232,7 +233,7 @@ public class RollHeaderView extends FrameLayout implements OnPageChangeListener 
 
             //加载图片
             Glide.with(mContext).load(mUrlList.get(position % mUrlList.size()))
-            .error(R.mipmap.ic_launcher).into(iv);
+                    .error(R.mipmap.ic_launcher).into(iv);
 
             ((ViewPager) container).addView(iv);
 
